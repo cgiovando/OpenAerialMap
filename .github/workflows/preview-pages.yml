@@ -1,0 +1,84 @@
+# Preview deploy for a fork, so a branch can be shown to reviewers and
+# non-technical readers before it is merged. Not part of the upstream deploy:
+# production publishes to S3 and CloudFront from `main`.
+#
+# Everything except the PMTiles points at production, so the catalog, tiles and
+# uploader are the real ones. PMTiles stay on production too, which means the
+# browse map shows the OAM collection alone - the Source filter needs
+# FOOTPRINT_COLLECTIONS set on the tile generator, which is a deployment
+# change rather than a frontend one.
+
+name: 🔍 Preview on Pages
+
+on:
+  push:
+    branches: [preview/oam-website]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: preview-pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build
+        env:
+          # Project Pages serve from /<repo>/, so the app needs the base both
+          # for asset URLs and for its own path matching.
+          VITE_BASE: /${{ github.event.repository.name }}/
+          VITE_API_URL: https://api.imagery.hotosm.org
+          VITE_STAC_URL: https://api.imagery.hotosm.org/stac
+          VITE_STAC_TITILER_URL: https://api.imagery.hotosm.org/raster
+          VITE_STAC_BROWSER_URL: https://api.imagery.hotosm.org/browser
+          VITE_UPLOADER_URL: https://upload.imagery.hotosm.org
+          VITE_PACKAGER_URL: https://packager.imagery.hotosm.org
+        run: pnpm build
+
+      - name: Add per-route entry points
+        # Pages serves static files, so a deep link needs a file at that path.
+        # 404.html covers anything else and lets the SPA route it.
+        run: |
+          for route in contribute browse; do
+            mkdir -p "dist/$route"
+            cp dist/index.html "dist/$route/index.html"
+          done
+          cp dist/index.html dist/404.html
+          touch dist/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -3,6 +3,9 @@ import UnoCSS from "unocss/vite";
 import { defineConfig } from "vite";
 
 export default defineConfig({
+  // "/" in production. A preview build on GitHub Pages sets VITE_BASE to the
+  // repository path, since project Pages are served from a subdirectory.
+  base: process.env.VITE_BASE || "/",
   plugins: [UnoCSS(), react()],
   build: {
     rollupOptions: {

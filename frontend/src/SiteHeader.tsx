@@ -18,6 +18,11 @@ const HEADER_TABS: HeaderTab[] = [
     clickEvent: () => (window.location.href = "/browse"),
   },
   {
+    label: "Contribute",
+    href: "/contribute",
+    clickEvent: () => (window.location.href = "/contribute"),
+  },
+  {
     label: "API",
     clickEvent: () => window.open(API_URL, "_blank"),
   },
