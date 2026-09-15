@@ -2,11 +2,13 @@
 # non-technical readers before it is merged. Not part of the upstream deploy:
 # production publishes to S3 and CloudFront from `main`.
 #
-# Everything except the PMTiles points at production, so the catalog, tiles and
-# uploader are the real ones. PMTiles stay on production too, which means the
-# browse map shows the OAM collection alone - the Source filter needs
-# FOOTPRINT_COLLECTIONS set on the tile generator, which is a deployment
-# change rather than a frontend one.
+# The catalog, raster tiles and uploader are production's. The PMTiles are not:
+# production builds them with FOOTPRINT_COLLECTIONS unset, so they carry the OAM
+# collection alone and the Source filter would have nothing to filter. Widening
+# that is a deployment change we cannot make from here, so the preview serves its
+# own pair, built by the same generator with the allowlist set and published as a
+# release asset on this fork. Snapshot, not a live feed - regenerate and re-upload
+# to refresh it.
 
 name: 🔍 Preview on Pages
 
@@ -56,7 +58,25 @@ jobs:
           VITE_STAC_BROWSER_URL: https://api.imagery.hotosm.org/browser
           VITE_UPLOADER_URL: https://upload.imagery.hotosm.org
           VITE_PACKAGER_URL: https://packager.imagery.hotosm.org
+          # Served from this Pages site, next to the app. PMTiles reads them
+          # with range requests, which Pages supports.
+          VITE_PMTILES_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/tiles/global-data.pmtiles
+          VITE_DENSITY_PMTILES_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/tiles/global-coverage.pmtiles
         run: pnpm build
+
+      - name: Fetch preview PMTiles
+        # Multi-collection archives built by
+        # backend/global-mosaic/scripts/gen_coverage_vector.py with
+        # FOOTPRINT_COLLECTIONS=openaerialmap,vantor-opendata.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p dist/tiles
+          gh release download preview-tiles \
+            --repo ${{ github.repository }} \
+            --pattern '*.pmtiles' \
+            --dir dist/tiles \
+            --clobber
 
       - name: Add per-route entry points
         # Pages serves static files, so a deep link needs a file at that path.
