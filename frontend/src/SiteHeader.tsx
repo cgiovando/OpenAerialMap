@@ -57,10 +57,11 @@ export default function SiteHeader() {
       // The logo's link defaults to "/" inside the component, which leaves the
       // app when it is served from a subdirectory. Like `tabs`, this is a JS
       // property rather than an observed attribute.
-      // `top-link-href` is an observed attribute, and the component renders the
-      // logo link from the attribute rather than the property, so setting the
-      // property alone leaves the logo pointing at the server root.
-      headerRef.current.setAttribute("top-link-href", appUrl("/"));
+      // NOTE: the logo's own link is hardcoded to "/" inside @hotosm/ui's
+      // hot-header. Setting `top-link-href`, as either attribute or property,
+      // does not change it, so clicking the logo leaves the app when it is
+      // served from a subdirectory. Harmless in production, where "/" is the
+      // app root. Needs fixing upstream in the component.
     }
   }, []);
 
