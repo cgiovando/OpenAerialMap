@@ -56,7 +56,7 @@ export default function SiteHeader() {
       <hot-header
         ref={headerRef}
         title="OpenAerialMap"
-        logo="/openaerialmap.svg"
+        logo={`${import.meta.env.BASE_URL}openaerialmap.svg`}
         size="s"
         tabs-center-align
       >
