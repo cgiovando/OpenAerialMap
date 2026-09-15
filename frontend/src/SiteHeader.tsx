@@ -4,6 +4,13 @@ import { ANNOUNCEMENT_URL, API_URL, UPLOADER_URL } from "./browse/utils/constant
 
 // Keep these tabs aligned with backend/uploader-api/app/templates/layout.html.
 
+// In-app paths have to be resolved against Vite's base, or they point at the
+// server root and 404 whenever the app is served from a subdirectory. BASE_URL
+// is "/" in production, so this is a no-op there.
+export function appUrl(path: string): string {
+  return `${import.meta.env.BASE_URL.replace(/\/+$/, "")}/${path.replace(/^\/+/, "")}`;
+}
+
 interface HeaderTab {
   label: string;
   href?: string;
@@ -11,16 +18,16 @@ interface HeaderTab {
 }
 
 const HEADER_TABS: HeaderTab[] = [
-  { label: "Home", href: "/", clickEvent: () => (window.location.href = "/") },
+  { label: "Home", href: appUrl("/"), clickEvent: () => (window.location.href = appUrl("/")) },
   {
     label: "Browse",
-    href: "/browse",
-    clickEvent: () => (window.location.href = "/browse"),
+    href: appUrl("/browse"),
+    clickEvent: () => (window.location.href = appUrl("/browse")),
   },
   {
     label: "Contribute",
-    href: "/contribute",
-    clickEvent: () => (window.location.href = "/contribute"),
+    href: appUrl("/contribute"),
+    clickEvent: () => (window.location.href = appUrl("/contribute")),
   },
   {
     label: "API",
