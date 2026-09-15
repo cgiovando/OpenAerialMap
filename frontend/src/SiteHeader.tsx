@@ -46,7 +46,7 @@ const HEADER_TABS: HeaderTab[] = [
 
 // hot-header is a web component: `title`/`logo` are attributes (see
 // global.d.ts), but `tabs` is a JS property assigned via ref after mount.
-type HotHeaderElement = HTMLElement & { tabs: HeaderTab[]; topLinkHref: string };
+type HotHeaderElement = HTMLElement & { tabs: HeaderTab[] };
 
 export default function SiteHeader() {
   const headerRef = useRef<HotHeaderElement>(null);
@@ -57,7 +57,10 @@ export default function SiteHeader() {
       // The logo's link defaults to "/" inside the component, which leaves the
       // app when it is served from a subdirectory. Like `tabs`, this is a JS
       // property rather than an observed attribute.
-      headerRef.current.topLinkHref = appUrl("/");
+      // `top-link-href` is an observed attribute, and the component renders the
+      // logo link from the attribute rather than the property, so setting the
+      // property alone leaves the logo pointing at the server root.
+      headerRef.current.setAttribute("top-link-href", appUrl("/"));
     }
   }, []);
 
