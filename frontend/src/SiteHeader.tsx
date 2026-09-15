@@ -64,6 +64,7 @@ export default function SiteHeader() {
         ref={headerRef}
         title="OpenAerialMap"
         logo={`${import.meta.env.BASE_URL}openaerialmap.svg`}
+        top-link-href={appUrl("/")}
         size="s"
         tabs-center-align
       >
