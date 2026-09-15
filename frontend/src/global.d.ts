@@ -6,9 +6,6 @@ type HotHeaderAttributes = DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLEl
   title?: string;
   logo?: string;
   size?: string;
-  // The logo's own link. Defaults to "/" inside the component, which leaves
-  // the app when it is served from a subdirectory.
-  "top-link-href"?: string;
   "tabs-center-align"?: boolean | string;
 };
 

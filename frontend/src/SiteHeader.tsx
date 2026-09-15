@@ -46,13 +46,19 @@ const HEADER_TABS: HeaderTab[] = [
 
 // hot-header is a web component: `title`/`logo` are attributes (see
 // global.d.ts), but `tabs` is a JS property assigned via ref after mount.
-type HotHeaderElement = HTMLElement & { tabs: HeaderTab[] };
+type HotHeaderElement = HTMLElement & { tabs: HeaderTab[]; topLinkHref: string };
 
 export default function SiteHeader() {
   const headerRef = useRef<HotHeaderElement>(null);
 
   useEffect(() => {
-    if (headerRef.current) headerRef.current.tabs = HEADER_TABS;
+    if (headerRef.current) {
+      headerRef.current.tabs = HEADER_TABS;
+      // The logo's link defaults to "/" inside the component, which leaves the
+      // app when it is served from a subdirectory. Like `tabs`, this is a JS
+      // property rather than an observed attribute.
+      headerRef.current.topLinkHref = appUrl("/");
+    }
   }, []);
 
   return (
@@ -64,7 +70,6 @@ export default function SiteHeader() {
         ref={headerRef}
         title="OpenAerialMap"
         logo={`${import.meta.env.BASE_URL}openaerialmap.svg`}
-        top-link-href={appUrl("/")}
         size="s"
         tabs-center-align
       >
