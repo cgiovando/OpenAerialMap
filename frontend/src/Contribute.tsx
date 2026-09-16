@@ -1,10 +1,17 @@
 import SiteHeader from "./SiteHeader";
 import { UPLOADER_URL } from "./browse/utils/constants";
+import { getRuntimeConfig } from "./runtimeConfig";
 import { CommonsFigure, RoutesFigure, MappingFigure } from "./contribute/figures";
 import "./Contribute.css";
 
-const INTAKE_URL =
-  "https://github.com/hotosm/openaerialmap/issues/new?template=imagery-provider-intake.yml";
+// The issue form lives in this repo, so the default is right in production.
+// Configurable because a preview build serves the page before the template
+// exists at the default target, and a dead "Register a catalog" button is the
+// one link on this page that must never be dead.
+const INTAKE_URL = getRuntimeConfig(
+  "VITE_INTAKE_URL",
+  "https://github.com/hotosm/openaerialmap/issues/new?template=imagery-provider-intake.yml",
+);
 const CONTACT = "info@openaerialmap.org";
 const DOCS_NEW_PROVIDER = "https://docs.imagery.hotosm.org/dev/ingest/new-provider/";
 const DOCS_SCHEMA = "https://docs.imagery.hotosm.org/dev/ingest/schema/";

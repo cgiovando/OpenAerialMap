@@ -58,6 +58,9 @@ jobs:
           VITE_STAC_BROWSER_URL: https://api.imagery.hotosm.org/browser
           VITE_UPLOADER_URL: https://upload.imagery.hotosm.org
           VITE_PACKAGER_URL: https://packager.imagery.hotosm.org
+          # Upstream has no such template until the page is merged, so the
+          # preview points the intake button at this fork's copy.
+          VITE_INTAKE_URL: https://github.com/${{ github.repository }}/issues/new?template=imagery-provider-intake.yml
           # Served from this Pages site, next to the app. PMTiles reads them
           # with range requests, which Pages supports.
           VITE_PMTILES_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/tiles/global-data.pmtiles
