@@ -6,14 +6,13 @@ body:
   - type: markdown
     attributes:
       value: |
-        Use this to register a catalog or bucket so OAM can index it. The imagery
-        stays in your storage under your license; OAM holds only the metadata.
+        **This ticket is public.** Everything you type here is visible to anyone on the internet and stays in the repository history. Give a team or role address rather than a personal one, and leave out anything you would not publish: no personal details, no credentials, no sensitive site locations.
 
-        **Uploading individual files instead?** No ticket needed - use the
-        [uploader](https://imagery.hotosm.org/upload).
+        Use this to register a catalog or bucket so OAM can index it. The imagery stays in your storage under your license; OAM holds only the metadata.
 
-        **Can't use a public tracker?** Email info@openaerialmap.org and say
-        which route below applies.
+        **Uploading individual files instead?** No ticket needed - use the [uploader](https://imagery.hotosm.org/upload).
+
+        **Can't use a public tracker, or need to discuss something sensitive?** Email info@openaerialmap.org instead and say which route below applies.
 
   - type: input
     id: organization
@@ -28,8 +27,8 @@ body:
     attributes:
       label: Public contact for the catalog
       description: >
-        Published in the catalog as the provider contact and visible to anyone
-        browsing. Use a team address rather than a personal one.
+        A team or role address, never a personal one. It is published twice
+        over: in this public ticket, and in the catalog as the provider contact.
       placeholder: opendata@example.org
     validations:
       required: true
@@ -139,7 +138,10 @@ body:
     id: notes
     attributes:
       label: Anything else
-      description: Constraints, areas excluded from release, questions.
+      description: >
+        Questions, or anything about the catalog we should know. Keep it to what
+        you would publish; if some areas are excluded from release, say so here
+        and send the detail to info@openaerialmap.org.
     validations:
       required: false
 
@@ -151,4 +153,6 @@ body:
         - label: I can authorize this release, or I can reach the person who can.
           required: true
         - label: I understand the imagery stays in our storage and OAM indexes the metadata.
+          required: true
+        - label: This ticket is public, and nothing I have entered is personal, sensitive or private.
           required: true
