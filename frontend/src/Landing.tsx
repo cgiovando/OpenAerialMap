@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import SiteHeader, { appUrl } from "./SiteHeader";
+import SiteHeader from "./SiteHeader";
+import { appUrl } from "./appUrl";
 import {
   PACKAGER_URL,
   STAC_BROWSER_CATALOG_URL,
@@ -207,9 +208,8 @@ export default function Landing() {
               </wa-button>
             </div>
             <p className="landing-hero-note">
-              Have imagery to share?{" "}
-              <a href={appUrl("/contribute")}>See the ways to contribute</a>, from single files to
-              a catalog.
+              Have imagery to share? <a href={appUrl("/contribute")}>See the ways to contribute</a>,
+              from single files to a catalog.
             </p>
           </div>
         </section>

@@ -24,7 +24,12 @@ import {
   DEFAULT_ZOOM,
 } from "../utils/constants";
 import { readInitialView, writeView } from "../utils/url";
-import { buildFilter, densityCountExpr, matchesFilters } from "../utils/filters";
+import {
+  buildFilter,
+  densityCountExpr,
+  isDensityCountApproximate,
+  matchesFilters,
+} from "../utils/filters";
 import { transformFeature } from "../utils/format";
 import { bboxAreaKm2, getFullBbox, type BBox } from "../utils/geo";
 import { ItemBoundsCache, fetchItemBounds, getTmsUrl, thumbUrl } from "../utils/tiles";
@@ -42,10 +47,7 @@ interface Props {
   selectedFeature: ImageFeature | null;
   onSelect: (f: ImageFeature | null) => void;
   onFeaturesUpdate: (fs: ImageFeature[]) => void;
-  // Collections present in the tile SOURCE, independent of the active layer
-  // filter. Reported separately from onFeaturesUpdate because the rendered
-  // features are already filtered, so they cannot tell the UI which other
-  // sources exist to switch to.
+  // Collection IDs available independently of the active filter.
   onCollectionsUpdate?: (ids: string[]) => void;
   searchBbox: BBox | null;
   onSearchArea: (bbox: BBox, center: [number, number], exactBounds: BBox) => void;
@@ -136,7 +138,7 @@ export default function OamMap({
   useEffect(() => {
     onFeaturesUpdateRef.current = onFeaturesUpdate;
     onCollectionsUpdateRef.current = onCollectionsUpdate;
-  }, [onFeaturesUpdate]);
+  }, [onFeaturesUpdate, onCollectionsUpdate]);
   useEffect(() => {
     filtersRef.current = filters;
   }, [filters]);
@@ -163,9 +165,6 @@ export default function OamMap({
   // triggers the Sidebar's built-in "Zoom in to see images" prompt.
   const emitVisibleFeatures = () => {
     if (!map.current || !onFeaturesUpdateRef.current) return;
-    // Before the zoom gate: which sources exist is a different question from
-    // which images are listable, and the answer must survive zooming out.
-    emitSeenCollections();
     if (map.current.getZoom() < FOOTPRINT_MIN_ZOOM) {
       onFeaturesUpdateRef.current([]);
       return;
@@ -193,17 +192,10 @@ export default function OamMap({
     } catch (e) {
       console.error("Error querying rendered features:", e);
     }
-
   };
 
-  // Which sources the catalogue holds, independent of zoom and of the active
-  // filter. Read from two places because neither covers the whole zoom range:
-  // footprints carry `collection` but only exist at FOOTPRINT_MIN_ZOOM and
-  // above, and below that the density cells carry the same answer in their
-  // per-source bucket keys. Without the second half the Source chip
-  // disappears when you zoom out, which reads as the filter being broken.
-  // querySourceFeatures ignores the layer filter, so both still see every
-  // source in the loaded tiles while a source filter is active.
+  // Read collections from footprints at high zoom and density buckets at low zoom.
+  // querySourceFeatures is unaffected by layer filters.
   const emitSeenCollections = () => {
     if (!map.current || !onCollectionsUpdateRef.current) return;
     const ids = new Set<string>();
@@ -276,10 +268,14 @@ export default function OamMap({
       ] as FilterSpecification);
     }
     if (map.current.getLayer("density-count")) {
-      map.current.setLayoutProperty("density-count", "text-field", [
-        "to-string",
-        countExpr,
-      ] as unknown as maplibregl.DataDrivenPropertyValueSpecification<string>);
+      const countText = isDensityCountApproximate(f)
+        ? ["concat", "up to ", ["to-string", countExpr]]
+        : ["to-string", countExpr];
+      map.current.setLayoutProperty(
+        "density-count",
+        "text-field",
+        countText as unknown as maplibregl.DataDrivenPropertyValueSpecification<string>,
+      );
       map.current.setFilter("density-count", [
         "all",
         ["==", ["geometry-type"], "Point"],
@@ -642,6 +638,7 @@ export default function OamMap({
       });
 
       map.current!.on("idle", () => {
+        emitSeenCollections();
         emitVisibleFeatures();
         setMapZoom(map.current!.getZoom());
         setIdleTick((t) => t + 1);
