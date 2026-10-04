@@ -337,7 +337,7 @@ export default function ImageCard({ feature, onSelect, isSelected }: Props) {
               </span>
               <button
                 type="button"
-                className="flex items-center gap-1 text-xs font-semibold text-cyan-600 hover:text-cyan-700 transition-colors cursor-pointer"
+                className="flex items-center gap-1 rounded-sm text-xs font-semibold text-cyan-600 transition-colors cursor-pointer hover:text-cyan-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600"
                 onClick={(e) => handleCopy(e, shareUrl(), "link")}
               >
                 <wa-icon
